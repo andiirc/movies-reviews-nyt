@@ -17,32 +17,93 @@ module.exports = app => {
       qs:{ 'api-key':key, 'publication-date': moment(now).format('YYYY-MM-DD') }
     }
     request.get(search, (err, response, body) => {
-            if(!err){
-              const { results, num_results } = JSON.parse(body)
-              const movies = results.map(item=>{
-                 return {
-                   display_title: item.display_title,
-                   multimedia: item.multimedia,
-                   opening_date: item.opening_date
-                 }
-               })
+      if(!err){
+        const { results, num_results } = JSON.parse(body)
+        const movies = results.map(item=>{
+          return {
+            display_title: item.display_title,
+            multimedia: item.multimedia,
+            opening_date: item.opening_date
+          }
+        })
+        request.get(`https://timezoneapi.io/api/ip`, (err, res, dat) => {
+          const { data } = JSON.parse(dat)
+          let log = {
+            ip:  data.ip,
+            date: moment(now).format("YYYY-MM-DD HH:mm:ss"),
+            search_term: search,
+            number_items: num_results
+          }
+            db.logs.insert(log, (err,res)=>{
+              if (err) console.log(err)
+            })
+        })
+        res.send({ data: movies, success: true })
+      }
+    })
+  })
 
-               request.get(`https://timezoneapi.io/api/ip`, (err, res, dat) => {
-                   const { data } = JSON.parse(dat)
-                   let log = {
-                      ip:  data.ip,
-                      date: moment(now).format("YYYY-MM-DD HH:mm:ss"),
-                      search_term: search,
-                      number_items: num_results
-                    }
-                    db.logs.insert(log, (err,res)=>{
-                       if (err) console.log(err)
-                    })
-               })
-
-              res.send({ data: movies, success: true })
+  app.get('/api/movie/:name',(req, res)=>{
+    let search = { url:'https://api.nytimes.com/svc/movies/v2/reviews/all.json',
+      qs: { 'api-key': key }
+    }
+    request.get(search,(err, response, body) => {
+      if(!err){
+        const { results, num_results } = JSON.parse(body)
+        const movie = results.filter(item=> item.display_title === req.params.name.trim())
+        .map(item=>{
+          let uri = encodeURI(`${req.hostname}:${app.get('port')}/api/movie-detail/${item.display_title.trim()}`)
+           return {
+             display_title: item.display_title,
+             multimedia: item.multimedia,
+             opening_date: item.opening_date,
+             headline: item.headline,
+             publication_date: item.publication_date,
+             byline: item.byline,
+             summary_short: item.summary_short,
+             href: uri
+           }
+        })
+        request.get(`https://timezoneapi.io/api/ip`, (err, res, dat) => {
+          const { data } = JSON.parse(dat)
+          let log = {
+               ip:  data.ip,
+               date: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+               search_term: search,
+               number_items: num_results
             }
-          })
+            db.logs.insert(log, (err,res)=>{
+               if (err) console.log(err)
+            })
+         })
+        res.send({data:movie, success: true})
+      }
+    })
+  })
+
+  app.get('/api/movie-detail/:name',(req, res)=>{
+    let search = { url:'https://api.nytimes.com/svc/movies/v2/reviews/all.json',
+      qs: { 'api-key': key }
+    }
+    request.get(search,(err, response, body) => {
+      if(!err){
+        const { results, num_results } = JSON.parse(body)
+        const movie = results.filter(item=> item.display_title === req.params.name.trim())
+        request.get(`https://timezoneapi.io/api/ip`, (err, res, dat) => {
+          const { data } = JSON.parse(dat)
+          let log = {
+               ip:  data.ip,
+               date: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+               search_term: search,
+               number_items: num_results
+            }
+            db.logs.insert(log, (err,res)=>{
+               if (err) console.log(err)
+            })
+         })
+        res.send({data:movie, success: true})
+      }
+    })
   })
 
   app.get('/api/movies/:query', (req,res)=>{
@@ -51,25 +112,23 @@ module.exports = app => {
       qs:{ 'api-key':key, 'query': req.params.query, 'order': "by-title" }
     }
     request.get(search,(err, response, body) => {
-            if(!err){
-              const { results, num_results } = JSON.parse(body)
-
-              request.get(`https://timezoneapi.io/api/ip`, (err, res, dat) => {
-                  const { data } = JSON.parse(dat)
-                  let log = {
-                     ip:  data.ip,
-                     date: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-                     search_term: search,
-                     number_items: num_results
-                   }
-                   db.logs.insert(log, (err,res)=>{
-                      if (err) console.log(err)
-                   })
-              })
-
-              res.send({ data: results, success: true })
-            }
-          })
+      if(!err){
+        const { results, num_results } = JSON.parse(body)
+        request.get(`https://timezoneapi.io/api/ip`, (err, res, dat) => {
+          const { data } = JSON.parse(dat)
+          let log = {
+            ip:  data.ip,
+            date: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+            search_term: search,
+            number_items: num_results
+          }
+            db.logs.insert(log, (err,res)=>{
+              if (err) console.log(err)
+            })
+        })
+        res.send({ data: results, success: true })
+      }
+    })
   })
 
 }
