@@ -1,4 +1,4 @@
-# movies-reviews-nyt# Getting started
+# Getting started
 
 To get the frontend running locally:
 
