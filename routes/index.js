@@ -1,10 +1,6 @@
 import request from 'request'
-import mongoJs from 'mongojs'
 import moment from 'moment'
-
-const db = mongoJs('localhost:27017/tracking-api',['logs'])
-db.on('error', err => console.log( 'Connection errored', err ) )
-db.on('connect',  () => console.log('database connected'))
+import db from '../libs/configDb.js'
 
 const key = '007e5be0a0f846ecb46a4328ffd2a037'
 
