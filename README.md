@@ -1,5 +1,14 @@
 # Getting started
 
+### Requirements
+
+* Node
+* Yarn
+* Express
+* MongoDB
+
+## Implementation Instructions
+
 To get the frontend running locally:
 
 * Clone this repo
