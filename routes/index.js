@@ -64,18 +64,20 @@ module.exports = app => {
              href: uri
            }
         })
+
         request.get(`https://timezoneapi.io/api/ip`, (err, res, dat) => {
           const { data } = JSON.parse(dat)
           let log = {
                ip:  data.ip,
                date: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
                search_term: search,
-               number_items: num_results
+               number_items: movie.length
             }
             db.logs.insert(log, (err,res)=>{
                if (err) console.log(err)
             })
          })
+
         res.send({data:movie, success: true})
       }
     })
@@ -95,7 +97,7 @@ module.exports = app => {
                ip:  data.ip,
                date: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
                search_term: search,
-               number_items: num_results
+               number_items: movie.length
             }
             db.logs.insert(log, (err,res)=>{
                if (err) console.log(err)
